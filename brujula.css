@@ -1,0 +1,51 @@
+.text-manager{
+    display: flex; 
+    justify-content: center;
+}
+
+.text-container{
+    border: 1px solid black;
+    padding: 15px;
+    border-radius: 5px;
+    flex-grow: 8;
+    height: 200px;
+    box-shadow: 3px 3px #888888;
+    overflow-y: scroll;
+}
+
+.buttons-container{
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: flex-start;
+}
+
+.buttons-container button{
+    height: 30px;
+    width: 100px;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+.textItem{
+    padding: 5px;
+    cursor: pointer;
+    -webkit-user-select: none;  /* Chrome all / Safari all */
+    -moz-user-select: none;     /* Firefox all */
+    -ms-user-select: none;      /* IE 10+ */
+    user-select: none;          /* Likely future */ 
+    /* For large texts, cut and put them in one line */ 
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+}
+
+.textItem:hover{
+    background-color: gainsboro;
+}
+
+.textItem.selected{
+    background-color: blue;
+    color: white;
+    font-weight: bold;
+}
