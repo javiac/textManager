@@ -6,10 +6,9 @@
 .text-container{
     border: 1px solid black;
     padding: 15px;
-    border-radius: 5px;
+    border-radius: 10px;
     flex-grow: 8;
     height: 200px;
-    box-shadow: 3px 3px #888888;
     overflow-y: scroll;
 }
 
@@ -28,7 +27,8 @@
 }
 
 .textItem{
-    padding: 5px;
+    padding: 10px;
+    margin: 0px;
     cursor: pointer;
     -webkit-user-select: none;  /* Chrome all / Safari all */
     -moz-user-select: none;     /* Firefox all */

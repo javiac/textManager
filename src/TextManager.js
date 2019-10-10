@@ -28,7 +28,7 @@ export class TextManager {
     }
 
     addText(text) {
-        this.texts.push({
+        this.texts.unshift({
             id: uuidv4(),
             value: text,
             selected: false
