@@ -1,14 +1,9 @@
-class TextManager {
-    textContainer;
-    buttonsContaine;
-    texts = [];
-    history = [[]];
-    historyIndex = 0;
-    buttonRemove;
-    buttonUndo;
-    buttonRedo;
-
+export class TextManager {
     constructor(textContainerId, buttonsContainerId) {
+        this.texts = [];
+        this.historyIndex = 0;
+        this.history = [[]];
+
         this.init(textContainerId, buttonsContainerId);
         this.restoreFromLocalStorage();
     }
