@@ -5,17 +5,14 @@
 
 .text-container{
     border: 1px solid black;
-    padding: 15px;
-    border-radius: 10px;
-    flex-grow: 8;
     height: 200px;
     overflow-y: scroll;
+    width: 50%;
 }
 
 .buttons-container{
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
     align-items: flex-start;
 }
 
@@ -23,7 +20,6 @@
     height: 30px;
     width: 100px;
     margin: 5px;
-    border-radius: 5px;
 }
 
 .textItem{
@@ -34,10 +30,24 @@
     -moz-user-select: none;     /* Firefox all */
     -ms-user-select: none;      /* IE 10+ */
     user-select: none;          /* Likely future */ 
+    display: flex;
+    justify-content: space-between;
+}
+
+.textItem div:first-child{
+    width: 70%;
     /* For large texts, cut and put them in one line */ 
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow-x: hidden;
+}
+
+.textItem div:last-child{
+    width: 30%;
+    color: gray;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    text-align: right;
 }
 
 .textItem:hover{
@@ -46,6 +56,10 @@
 
 .textItem.selected{
     background-color: blue;
+}
+
+.textItem.selected div{
     color: white;
     font-weight: bold;
 }
+

@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 export class TextManager {
     constructor(textContainerId, buttonsContainerId) {
         this.texts = [];
@@ -31,7 +33,8 @@ export class TextManager {
         this.texts.unshift({
             id: uuidv4(),
             value: text,
-            selected: false
+            selected: false,
+            createdAt: moment().format('MMMM Do YYYY, HH:mm:ss')
         })
 
         this.saveHistory();
@@ -131,16 +134,24 @@ export class TextManager {
         }
 
         for (const text of this.texts) {
-            const paragraph = document.createElement("p");
-            paragraph.id = text.id;
-            paragraph.className = `textItem${text.selected ? ' selected' : ''}`;
+            const textItem = document.createElement('div');
+            textItem.id = text.id;
+            textItem.className = `textItem${text.selected ? ' selected' : ''}`;
 
-            paragraph.addEventListener('click', (event) => this.selectText(event.target.id))
-            paragraph.addEventListener('dblclick', (event) => this.removeText(event.target.id))
+            textItem.addEventListener('click', () => this.selectText(textItem.id))
+            textItem.addEventListener('dblclick', () => this.removeText(textItem.id))
 
-            const textContent = document.createTextNode(text.value);
-            paragraph.appendChild(textContent);
-            this.textContainer.appendChild(paragraph);
+            const textPart = document.createElement("div");
+            const textNode = document.createTextNode(text.value);
+            textPart.appendChild(textNode);
+            textItem.appendChild(textPart);
+
+            const datePart = document.createElement("div");
+            const dateNode = document.createTextNode(text.createdAt || '')
+            datePart.appendChild(dateNode);
+            textItem.appendChild(datePart);
+
+            this.textContainer.appendChild(textItem);
         }
 
         this.updateButtons()
