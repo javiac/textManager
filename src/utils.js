@@ -19,3 +19,11 @@ function generateMockupTexts() {
 
     return result;
 }
+
+export function createElementWithText(tagName, text) {
+    const element = document.createElement(tagName);
+    const textNode = document.createTextNode(text);
+    element.appendChild(textNode);
+
+    return element;
+}

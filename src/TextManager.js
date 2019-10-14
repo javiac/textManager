@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { createElementWithText } from './utils';
 
 export class TextManager {
     constructor(textContainerId, buttonsContainerId) {
@@ -7,7 +8,6 @@ export class TextManager {
         this.history = [[]];
 
         this.init(textContainerId, buttonsContainerId);
-        this.restoreFromLocalStorage();
     }
 
     init(textContainerId, buttonsContainerId) {
@@ -26,20 +26,25 @@ export class TextManager {
         this.buttonUndo = buttons[2];
         this.buttonRedo = buttons[3];
 
-        this.updateButtons()
+        this.updateButtons();
+        this.restoreFromLocalStorage();
+        this.saveHistory();
     }
 
-    addText(text) {
-        this.texts.unshift({
-            id: uuidv4(),
-            value: text,
-            selected: false,
-            createdAt: moment().format('MMMM Do YYYY, HH:mm:ss')
-        })
+    addText() {
+        const text = prompt("Please enter a new text", "My new text");
+        if (text) {
+            this.texts.push({
+                id: uuidv4(),
+                value: text,
+                selected: false,
+                createdAt: moment().format('MMMM Do YYYY, HH:mm:ss')
+            })
 
-        this.saveHistory();
-        this.saveLocalStorage();
-        this.redraw();
+            this.saveHistory();
+            this.saveLocalStorage();
+            this.redraw();
+        }
     }
 
     selectText(id) {
@@ -118,7 +123,8 @@ export class TextManager {
 
     /** Items will be avilable after reloading the page */
     saveLocalStorage() {
-        window.localStorage.setItem('texts', JSON.stringify(this.texts))
+        const textsToSave = JSON.stringify(this.texts.map(text => { return { ...text, highlighted: undefined, selected: undefined } }))
+        window.localStorage.setItem('texts', textsToSave)
     }
 
     restoreFromLocalStorage() {
@@ -129,31 +135,46 @@ export class TextManager {
     }
 
     redraw() {
-        while (this.textContainer.firstChild) {
-            this.textContainer.firstChild.remove();
+        const textElements = this.textContainer.getElementsByClassName('text-item');
+
+        // Remove elements from the view
+        for (const element of Array.from(textElements)) {
+            const text = this.texts.find(item => item.id === element.id);
+            if (text) {
+                this.checkElementClass('selected', text, element);
+                this.checkElementClass('highlighted', text, element);
+            } else {
+                element.remove();
+            }
         }
 
-        for (const text of this.texts) {
-            const textItem = document.createElement('div');
-            textItem.id = text.id;
-            textItem.className = `textItem${text.selected ? ' selected' : ''}`;
+        // Insert new elements in the view
+        const textElementsIds = Array.from(textElements).map(item => item.id);
+        for (let i = 0; i < this.texts.length; i++) {
+            if (!textElementsIds.includes(this.texts[i].id)) {
+                const textItem = document.createElement('div');
+                textItem.id = this.texts[i].id;
+                textItem.className = `text-item${this.texts[i].selected ? ' selected' : ''}${this.texts[i].highlighted ? ' highlighted' : ''}`;
 
-            textItem.addEventListener('click', () => this.selectText(textItem.id))
-            textItem.addEventListener('dblclick', () => this.removeText(textItem.id))
+                textItem.addEventListener('click', () => this.selectText(textItem.id))
+                textItem.addEventListener('dblclick', () => this.removeText(textItem.id))
+                textItem.addEventListener('mouseenter', () => this.setHighlighted(textItem))
 
-            const textPart = document.createElement("div");
-            const textNode = document.createTextNode(text.value);
-            textPart.appendChild(textNode);
-            textItem.appendChild(textPart);
+                const textPart = createElementWithText('div', this.texts[i].value);
+                textItem.appendChild(textPart);
+                const datePart = createElementWithText('div', this.texts[i].createdAt || '');
+                textItem.appendChild(datePart);
 
-            const datePart = document.createElement("div");
-            const dateNode = document.createTextNode(text.createdAt || '')
-            datePart.appendChild(dateNode);
-            textItem.appendChild(datePart);
-
-            this.textContainer.appendChild(textItem);
+                const childInSamePosition = this.textContainer.childNodes[textElementsIds.length - 1 - i];
+                if (childInSamePosition) {
+                    childInSamePosition.insertAdjacentElement('afterend', textItem);
+                } else {
+                    this.textContainer.prepend(textItem);
+                }
+            }
         }
 
+        this.adjustScroll();
         this.updateButtons()
     }
 
@@ -175,5 +196,95 @@ export class TextManager {
         } else {
             this.buttonRedo.disabled = false;
         }
+    }
+
+    handleKeyPress(keyCode) {
+        console.log(keyCode);
+        this.keyboardActive = true;
+        switch (keyCode) {
+            case 97:
+                this.addText();
+                break;
+            case 117:
+                this.undo();
+                break;
+            case 114:
+                this.redo();
+                break;
+
+        }
+    }
+
+    handleKeyDown(keyCode) {
+        console.log(keyCode);
+        this.keyboardActive = true;
+        switch (keyCode) {
+            case 38:
+                this.moveHighlighted('up');
+                break;
+            case 40:
+                this.moveHighlighted('down');
+                break;
+        }
+    }
+
+    setHighlighted(textItem) {
+        if (!this.keyboardActive) {
+            this.texts = this.texts.map(text => { return { ...text, highlighted: false } })
+            const text = this.texts.find(text => text.id === textItem.id);
+            text.highlighted = true;
+            this.redraw();
+        }
+    }
+
+    checkElementClass(className, textModel, textElement) {
+        if (textModel[className] && !$(textElement).hasClass(className)) {
+            $(textElement).addClass(className);
+        } else if (!textModel[className] && $(textElement).hasClass(className)) {
+            $(textElement).removeClass(className);
+        }
+    }
+
+    moveHighlighted(direction) {
+        if (this.texts.length > 0) {
+
+            const currentHighlightedIndex = this.texts.map(text => text.highlighted).indexOf(true);
+            let indexToHighlight;
+            if (currentHighlightedIndex === -1) {
+                indexToHighlight = this.texts.length - 1;
+            } else {
+                if (direction === 'down') {
+                    indexToHighlight = Math.max(currentHighlightedIndex - 1, 0);
+                } else {
+                    indexToHighlight = Math.min(currentHighlightedIndex + 1, this.texts.length - 1);
+                }
+            }
+
+            this.texts = this.texts.map(text => { return { ...text, highlighted: false } });
+            this.texts[indexToHighlight].highlighted = true;
+            this.redraw();
+        }
+    }
+
+    adjustScroll() {
+        const element = $('.highlighted')[0];
+
+        if (element) {
+            const elementPositions = element.getBoundingClientRect();
+            const containerPositions = this.textContainer.getBoundingClientRect();
+
+            // Highlighted element overflows at bottom
+            if (elementPositions.bottom > containerPositions.bottom) {
+                this.textContainer.scrollTop += elementPositions.bottom - containerPositions.bottom;
+            }
+            // Element overflows at top
+            else if (elementPositions.top < containerPositions.top) {
+                this.textContainer.scrollTop -= containerPositions.top - elementPositions.top;
+            }
+        }
+    }
+
+    enableMouse() {
+        this.keyboardActive = false;
     }
 }

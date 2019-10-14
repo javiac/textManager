@@ -11,11 +11,7 @@ window.onload = () => {
 }
 
 window.onAdd = () => {
-    const text = prompt("Please enter a new text", "My new text");
-
-    if (text) {
-        textManager.addText(text);
-    }
+    textManager.addText();
 }
 
 window.onRemove = () => {
@@ -32,4 +28,16 @@ window.onRedo = () => {
 
 window.onResetMock = () => {
     textManager.resetMock();
+}
+
+window.onkeypress = (event) => {
+    textManager.handleKeyPress(event.which || event.keyCode)
+}
+
+window.onkeydown = (event) => {
+    textManager.handleKeyDown(event.which || event.keyCode);
+}
+
+window.onmousemove = () => {
+    textManager.enableMouse();
 }

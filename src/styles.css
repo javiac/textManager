@@ -22,7 +22,7 @@
     margin: 5px;
 }
 
-.textItem{
+.text-item{
     padding: 10px;
     margin: 0px;
     cursor: pointer;
@@ -34,7 +34,7 @@
     justify-content: space-between;
 }
 
-.textItem div:first-child{
+.text-item div:first-child{
     width: 70%;
     /* For large texts, cut and put them in one line */ 
     white-space: nowrap;
@@ -42,7 +42,7 @@
     overflow-x: hidden;
 }
 
-.textItem div:last-child{
+.text-item div:last-child{
     width: 30%;
     color: gray;
     font-family: Arial, Helvetica, sans-serif;
@@ -50,15 +50,15 @@
     text-align: right;
 }
 
-.textItem:hover{
+.text-item.highlighted{
     background-color: gainsboro;
 }
 
-.textItem.selected{
+.text-item.selected{
     background-color: blue;
 }
 
-.textItem.selected div{
+.text-item.selected div{
     color: white;
     font-weight: bold;
 }
