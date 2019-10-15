@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 export function setupMockjax() {
     $.mockjax({
         url: "/demoTexts",
@@ -14,6 +16,7 @@ function generateMockupTexts() {
         result.push({
             id: uuidv4(),
             value: `${i.toString()} Demo textoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo ${i.toString()}`,
+            createdAt: moment().format('MMMM Do YYYY, HH:mm:ss')
         })
     }
 

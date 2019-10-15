@@ -6,38 +6,43 @@ let textManager;
 
 window.onload = () => {
     textManager = new TextManager('textContainer', 'buttonsContainer');
-    textManager.redraw();
+    textManager.render();
     setupMockjax();
-}
 
-window.onAdd = () => {
-    textManager.addText();
-}
+    window.onAdd = () => {
+        textManager.addText();
+    }
 
-window.onRemove = () => {
-    textManager.removeSelectedTexts();
-}
+    window.onRemove = () => {
+        textManager.removeSelectedTexts();
+    }
 
-window.onUndo = () => {
-    textManager.undo();
-}
+    window.onUndo = () => {
+        textManager.undo();
+    }
 
-window.onRedo = () => {
-    textManager.redo();
-}
+    window.onRedo = () => {
+        textManager.redo();
+    }
 
-window.onResetMock = () => {
-    textManager.resetMock();
-}
+    window.onResetMock = () => {
+        textManager.resetMock();
+    }
 
-window.onkeypress = (event) => {
-    textManager.handleKeyPress(event.which || event.keyCode)
-}
+    window.onkeypress = (event) => {
+        textManager.handleKeyPress(event, event.which || event.keyCode)
+    }
 
-window.onkeydown = (event) => {
-    textManager.handleKeyDown(event.which || event.keyCode);
-}
+    window.onkeydown = (event) => {
+        textManager.handleKeyDown(event, event.which || event.keyCode);
+    }
 
-window.onmousemove = () => {
-    textManager.enableMouse();
+    window.onmousemove = () => {
+        textManager.enableMouse();
+    }
+
+    window.onSearch = (event) => {
+        textManager.search(event.target.value);
+        event.stopPropagation();
+    }
 }

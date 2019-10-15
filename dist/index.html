@@ -10,21 +10,57 @@
 </head>
 
 <body>
-    <page-section>
-        <div class="text-manager">
+    <header>
+        <h2> Text manager </h2>
+    </header>
+    <section class="text-manager">
+        <section>
+            <input id="inputSearch" type="text" placeholder="Search a text" onkeypress="event.stopPropagation()"
+                onkeyup="onSearch(event)"> </input>
+        </section>
+        <section>
             <div id="textContainer" class="text-container"></div>
-            <div id="buttonsContainer" class="buttons-container">
-                <button onclick="onAdd()"> + </button>
-                <button onclick="onRemove()"> - </button>
-                <button onclick="onUndo()"> Undo </button>
-                <button onclick="onRedo()"> Redo </button>
-                <button onclick="onResetMock()"> Reset mock </button>
-            </div>
-        </div>
-    </page-section>
-    <page-section>
-
-    </page-section>
+        </section>
+        <section id="buttonsContainer" class="buttons-container">
+            <button onclick="onAdd()"> + </button>
+            <button onclick="onRemove()"> - </button>
+            <button onclick="onUndo()"> Undo </button>
+            <button onclick="onRedo()"> Redo </button>
+            <button onclick="onResetMock()"> Reset mock </button>
+        </section>
+    </section>
+    <section>
+        <h3>Keyboard shortcuts </h3>
+        <ul>
+            <li>
+                <strong> A </strong> Add new text
+            </li>
+            <li>
+                <strong> &darr; </strong> Navigate down
+            </li>
+            <li>
+                <strong> &uarr; </strong> Navigate up
+            </li>
+            <li>
+                <strong> S </strong> Select a text
+            </li>
+            <li>
+                <strong> D </strong> Delete the selected texts
+            </li>
+            <li>
+                <strong> U </strong> Undo
+            </li>
+            <li>
+                <strong> R </strong> Redo
+            </li>
+            <li>
+                <strong> M </strong> Load mock
+            </li>
+            <li>
+                <strong> F </strong> Search
+            </li>
+        </ul>
+    </section>
 </body>
 
 </html>

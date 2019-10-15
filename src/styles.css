@@ -1,6 +1,11 @@
-.text-manager{
+header{
+    text-align: center;
+}
+
+.text-manager section{
     display: flex; 
     justify-content: center;
+    margin-bottom: 15px;
 }
 
 .text-container{
@@ -8,12 +13,6 @@
     height: 200px;
     overflow-y: scroll;
     width: 50%;
-}
-
-.buttons-container{
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
 }
 
 .buttons-container button{

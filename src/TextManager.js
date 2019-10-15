@@ -6,6 +6,7 @@ export class TextManager {
         this.texts = [];
         this.historyIndex = 0;
         this.history = [[]];
+        this.filter = '';
 
         this.init(textContainerId, buttonsContainerId);
     }
@@ -26,9 +27,76 @@ export class TextManager {
         this.buttonUndo = buttons[2];
         this.buttonRedo = buttons[3];
 
+        this.inputSearch = $('#inputSearch');
+
         this.updateButtons();
         this.restoreFromLocalStorage();
         this.saveHistory();
+    }
+
+    createTextItem(data) {
+        const textItem = document.createElement('div');
+        textItem.id = data.id;
+        textItem.className = `text-item${data.selected ? ' selected' : ''}${data.highlighted ? ' highlighted' : ''}`;
+
+        textItem.addEventListener('click', () => this.selectText(textItem.id))
+        textItem.addEventListener('dblclick', () => this.removeText(textItem.id))
+        textItem.addEventListener('mouseenter', () => this.setHighlighted(textItem))
+
+        const textPart = createElementWithText('div', data.value);
+        textItem.appendChild(textPart);
+        const datePart = createElementWithText('div', data.createdAt || '');
+        textItem.appendChild(datePart);
+        return textItem;
+    }
+
+    render(clearContainer) {
+        if (clearContainer) {
+            while (this.textContainer.firstChild) {
+                this.textContainer.firstChild.remove();
+            }
+        }
+
+        const filteredTexts = this.filterTexts();
+
+        let textElements = this.textContainer.getElementsByClassName('text-item');
+
+        // Remove or update existing elements
+        for (const element of Array.from(textElements)) {
+            const text = filteredTexts.find(item => item.id === element.id);
+            if (text) {
+                this.checkElementClass('selected', text, element);
+                this.checkElementClass('highlighted', text, element);
+            } else {
+                element.remove();
+            }
+        }
+
+        // Insert new elements
+        textElements = this.textContainer.getElementsByClassName('text-item');
+        let textElementsIds = Array.from(textElements).map(item => item.id);
+
+        for (let i = 0; i < filteredTexts.length; i++) {
+            if (!textElementsIds.includes(filteredTexts[i].id)) {
+
+                const textItem = this.createTextItem(filteredTexts[i]);
+
+                const childInSamePosition = this.textContainer.childNodes[textElementsIds.length - 1 - i];
+                if (childInSamePosition) {
+                    childInSamePosition.insertAdjacentElement('afterend', textItem);
+                } else {
+                    this.textContainer.prepend(textItem);
+                }
+
+                textElements = this.textContainer.getElementsByClassName('text-item');
+                textElementsIds = Array.from(textElements).map(item => item.id);
+            }
+        }
+
+        this.adjustScroll();
+        this.updateButtons();
+        $('#inputSearch').val(this.filter);
+
     }
 
     addText() {
@@ -43,7 +111,7 @@ export class TextManager {
 
             this.saveHistory();
             this.saveLocalStorage();
-            this.redraw();
+            this.render();
         }
     }
 
@@ -52,14 +120,14 @@ export class TextManager {
         if (text) {
             text.selected = !text.selected;
         }
-        this.redraw();
+        this.render();
     }
 
     removeSelectedTexts() {
         this.texts = this.texts.filter(text => !text.selected);
         this.saveHistory();
         this.saveLocalStorage();
-        this.redraw();
+        this.render();
     }
 
     undo() {
@@ -67,7 +135,8 @@ export class TextManager {
             this.historyIndex--;
             this.texts = JSON.parse(JSON.stringify(this.history[this.historyIndex]));
             this.saveLocalStorage();
-            this.redraw();
+            this.filter = '';
+            this.render();
         }
     }
 
@@ -77,7 +146,8 @@ export class TextManager {
             this.historyIndex++;
             this.texts = JSON.parse(JSON.stringify(this.history[this.historyIndex]))
             this.saveLocalStorage();
-            this.redraw();
+            this.filter = '';
+            this.render();
         }
     }
 
@@ -105,7 +175,7 @@ export class TextManager {
         }
         this.saveHistory();
         this.saveLocalStorage();
-        this.redraw();
+        this.render();
     }
 
     resetMock() {
@@ -114,7 +184,7 @@ export class TextManager {
                 this.texts = response.data;
                 this.saveHistory();
                 this.saveLocalStorage();
-                this.redraw();
+                this.render();
             } else {
                 throw new Error('Mock failed');
             }
@@ -132,50 +202,6 @@ export class TextManager {
         if (texts) {
             this.texts = JSON.parse(texts);
         }
-    }
-
-    redraw() {
-        const textElements = this.textContainer.getElementsByClassName('text-item');
-
-        // Remove elements from the view
-        for (const element of Array.from(textElements)) {
-            const text = this.texts.find(item => item.id === element.id);
-            if (text) {
-                this.checkElementClass('selected', text, element);
-                this.checkElementClass('highlighted', text, element);
-            } else {
-                element.remove();
-            }
-        }
-
-        // Insert new elements in the view
-        const textElementsIds = Array.from(textElements).map(item => item.id);
-        for (let i = 0; i < this.texts.length; i++) {
-            if (!textElementsIds.includes(this.texts[i].id)) {
-                const textItem = document.createElement('div');
-                textItem.id = this.texts[i].id;
-                textItem.className = `text-item${this.texts[i].selected ? ' selected' : ''}${this.texts[i].highlighted ? ' highlighted' : ''}`;
-
-                textItem.addEventListener('click', () => this.selectText(textItem.id))
-                textItem.addEventListener('dblclick', () => this.removeText(textItem.id))
-                textItem.addEventListener('mouseenter', () => this.setHighlighted(textItem))
-
-                const textPart = createElementWithText('div', this.texts[i].value);
-                textItem.appendChild(textPart);
-                const datePart = createElementWithText('div', this.texts[i].createdAt || '');
-                textItem.appendChild(datePart);
-
-                const childInSamePosition = this.textContainer.childNodes[textElementsIds.length - 1 - i];
-                if (childInSamePosition) {
-                    childInSamePosition.insertAdjacentElement('afterend', textItem);
-                } else {
-                    this.textContainer.prepend(textItem);
-                }
-            }
-        }
-
-        this.adjustScroll();
-        this.updateButtons()
     }
 
     updateButtons() {
@@ -198,8 +224,7 @@ export class TextManager {
         }
     }
 
-    handleKeyPress(keyCode) {
-        console.log(keyCode);
+    handleKeyPress(event, keyCode) {
         this.keyboardActive = true;
         switch (keyCode) {
             case 97:
@@ -211,19 +236,34 @@ export class TextManager {
             case 114:
                 this.redo();
                 break;
-
+            case 115:
+                this.select();
+                break;
+            case 100:
+                this.removeSelectedTexts();
+                break;
+            case 109:
+                this.resetMock();
+                break;
+            case 102:
+                this.inputSearch.focus();
+                event.preventDefault();
+                break;
         }
     }
 
-    handleKeyDown(keyCode) {
-        console.log(keyCode);
+    handleKeyDown(event, keyCode) {
         this.keyboardActive = true;
         switch (keyCode) {
             case 38:
                 this.moveHighlighted('up');
+                event.preventDefault();
+                this.inputSearch.blur();
                 break;
             case 40:
                 this.moveHighlighted('down');
+                event.preventDefault();
+                this.inputSearch.blur();
                 break;
         }
     }
@@ -233,7 +273,7 @@ export class TextManager {
             this.texts = this.texts.map(text => { return { ...text, highlighted: false } })
             const text = this.texts.find(text => text.id === textItem.id);
             text.highlighted = true;
-            this.redraw();
+            this.render();
         }
     }
 
@@ -246,23 +286,25 @@ export class TextManager {
     }
 
     moveHighlighted(direction) {
-        if (this.texts.length > 0) {
+        const filteredTexts = this.filterTexts();
 
-            const currentHighlightedIndex = this.texts.map(text => text.highlighted).indexOf(true);
-            let indexToHighlight;
+        if (filteredTexts.length > 0) {
+            const currentHighlightedIndex = filteredTexts.map(text => text.highlighted).indexOf(true);
+            let textToHighlight;
             if (currentHighlightedIndex === -1) {
-                indexToHighlight = this.texts.length - 1;
+                textToHighlight = filteredTexts[filteredTexts.length - 1];
             } else {
                 if (direction === 'down') {
-                    indexToHighlight = Math.max(currentHighlightedIndex - 1, 0);
+                    textToHighlight = filteredTexts[Math.max(currentHighlightedIndex - 1, 0)];
                 } else {
-                    indexToHighlight = Math.min(currentHighlightedIndex + 1, this.texts.length - 1);
+                    textToHighlight = filteredTexts[Math.min(currentHighlightedIndex + 1, filteredTexts.length - 1)];
                 }
             }
 
             this.texts = this.texts.map(text => { return { ...text, highlighted: false } });
+            const indexToHighlight = this.texts.map(text => text.id).indexOf(textToHighlight.id)
             this.texts[indexToHighlight].highlighted = true;
-            this.redraw();
+            this.render();
         }
     }
 
@@ -286,5 +328,25 @@ export class TextManager {
 
     enableMouse() {
         this.keyboardActive = false;
+    }
+
+    select() {
+        const toSelectText = this.texts.find(text => text.highlighted);
+
+        if (toSelectText) {
+            toSelectText.selected = !toSelectText.selected;
+        }
+
+        this.render();
+    }
+
+    search(value) {
+        this.filter = value;
+        this.render(true);
+    }
+
+    filterTexts() {
+        const regex = new RegExp(`${this.filter}`, "i")
+        return this.texts.filter(text => text.value.match(regex));
     }
 }
