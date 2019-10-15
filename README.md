@@ -1,13 +1,15 @@
 Texts manager
 =
 
+## Launch the app
+Open dist/index.html in your browser
 
 ## Running the app for development
 Install the node dependencies
 ```
 npm install
 ```
-Compile and pack the files using webpack
+Compile and pack the files
 ```
 npm run build
 ```
